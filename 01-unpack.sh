@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -euo pipefail
+
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <firmware>"
   exit 1
@@ -9,12 +11,17 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 
-firmware=$1
-pos=$(grep -a -b -m 1 "UBI#" "$firmware" | cut -d ":" -f 1)
+firmware="$1"
+pos=$(grep -a -b -m 1 "UBI#" "$firmware" | cut -d ':' -f 1)
+if [ -z "$pos" ]; then
+  echo 'No UBI# found in firmware'
+  exit 1
+fi
+
 mkdir -p tmp
 
-dd if=$firmware of=tmp/header.bin bs=$pos count=1
-dd if=$firmware of=tmp/ubi.img bs=$pos skip=1
+dd "if=${firmware}" of=tmp/header.bin "bs=${pos}" count=1
+dd "if=${firmware}" of=tmp/ubi.img "bs=${pos}" skip=1
 
 cd tmp
 ubireader_extract_images ubi.img
@@ -22,4 +29,4 @@ ubireader_extract_images ubi.img
 cd ..
 find -name "*rootfs.ubifs" -exec unsquashfs {} \;
 
-echo "Successfully unpacked rootfs to squashfs-root. Modify anything you want and repack the firmware"
+echo 'Successfully unpacked rootfs to squashfs-root. Modify anything you want and repack the firmware'
