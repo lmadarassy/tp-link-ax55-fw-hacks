@@ -1,0 +1,7 @@
+[project]
+name = "tp-link-ax55-fw-hacks"
+version = "0.1.0"
+dependencies = [
+    "ubi-reader>=0.8.16",
+]
+requires-python = ">=3.14"
